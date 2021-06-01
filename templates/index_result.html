@@ -1,4 +1,4 @@
-<html>
+﻿<html>
 
     <head>
         <title>Fastapi test</title>
@@ -8,7 +8,7 @@
     </head>
 
     <body>
-        <h1>Fastapi Test</h1>
+        <a onclick="window.open('/')">Fastapi Test</a>
         <div>
             <form method="POST" action="compression" enctype="multipart/form-data">
                 <input type="file" name="file"/>
@@ -19,16 +19,18 @@
                     Max_depth : <input type="text" name="max_depth" value={{max_depth}}>
                     Target_depth : <input type="text" name="target_depth" value={{target_depth}}>
                 </fieldset>
-                <input type = "submit" value="압축"/>
             </form>    
             <img src={{file_path}}>
             <a href={{compressed_path}} download>
                 <img src={{compressed_path}}>
             </a>
-            <form action="predict" method="POST" enctype="multipart/form-data">
+            <form action="compression/predict" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="compressed_path" value={{compressed_path}}>
-                <input type="submit" value="예측"/>
             </form>
+            <span class="label"><br>
+                {{label}}<br>
+                0: Angular_Leaf_Spot 1: Bean_Rust 2: healthy
+            </span>
         
         </div>
     

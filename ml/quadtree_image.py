@@ -4,13 +4,11 @@ import os
 import sys
 import argparse
 
-def set_image(image_path, size_mult=1):
+def set_image(image_path, size_mult=1.0):
     # load image
     image = Image.open(image_path)
-    image = image.resize((image.size[0] * size_mult, image.size[1] * size_mult))
+    image = image.resize((int(image.size[0] * size_mult), int(image.size[1] * size_mult)))
     return image
-
-
 
 def average_colour(image):
     # convert image to np array
@@ -168,7 +166,7 @@ class QuadTree():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--img_path',type=str,required=True,help='input image path')
-    parser.add_argument('--size_mult',type=int,required=False,default=1,help='size_mult')
+    parser.add_argument('--size_mult',type=float,required=False,default=1.0,help='size_mult')
     parser.add_argument('--max_depth',type=int,required=False,default=8,help='max_depth')
     parser.add_argument('--target_depth',type=int,required=False,default=6,help='target_depth')
     parser.add_argument('--detail_threshold',type=int,required=False,default=13,help='detail_threshold')
@@ -181,7 +179,7 @@ def main():
 
     image_name = image_path.split('/')[-1].split('.')[0]
     save_path = './thanosed_image'
-    image = set_image(image_path, int(size_mult))
+    image = set_image(image_path, float(size_mult))
     quadtree = QuadTree(image,int(detail_threshold),int(max_depth))
     image,temp = quadtree.create_image(int(target_depth),show_lines=False)
     isdir = os.path.isdir(save_path)
