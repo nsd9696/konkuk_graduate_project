@@ -85,4 +85,4 @@ model = build_autoencoder()
 model.compile(optimizer=optimizers.Adam(), loss='MSE')
 
 hist = model.fit(X, X_target, epochs=epochs, batch_size=batch_size)
-
+model.save()
