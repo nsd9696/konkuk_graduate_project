@@ -9,28 +9,11 @@
 
     <body>
         <a onclick="window.open('/')">Fastapi Test</a>
-        <div>
-            <form method="POST" action="compression" enctype="multipart/form-data">
-                <input type="file" name="file"/>
-                <fieldset>
-                    <legend>압축 parameter 지정</legend>
-                    Size_mult : <input type="text" name="size_mult" value={{size_mult}}><br>
-                    Detail_threshold : <input type="text" name="detail_threshold" value={{detail_threshold}}><br>
-                    Max_depth : <input type="text" name="max_depth" value={{max_depth}}>
-                    Target_depth : <input type="text" name="target_depth" value={{target_depth}}>
-                </fieldset>
-            </form>    
+        <div>   
             <img src={{file_path}}>
-            <a href={{compressed_path}} download>
-                <img src={{compressed_path}}>
+            <a href={{denoised_path}} download>
+                <img src={{denoised_path}}>
             </a>
-            <form action="compression/predict" method="POST" enctype="multipart/form-data">
-                <input type="hidden" name="compressed_path" value={{compressed_path}}>
-            </form>
-            <span class="label"><br>
-                {{label}}<br>
-                0: Angular_Leaf_Spot 1: Bean_Rust 2: healthy
-            </span>
         
         </div>
     
