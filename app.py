@@ -3,13 +3,14 @@ from fastapi import FastAPI,Request,Response,File,UploadFile,Form
 from fastapi.responses import HTMLResponse,FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from ml.quadtree_image import QuadTree
 import shutil
 import os
 from PIL import Image
 from io import BytesIO
 import numpy as np
 from tensorflow import keras
+from keras.preprocessing.image import load_img,img_to_array
+
 
 #create app
 app = FastAPI()
@@ -22,28 +23,39 @@ async def index(request:Request):
     return templates.TemplateResponse("index.html",{'request':request})
 
 @app.post("/predict")
-async def compress(request:Request, compressed_path: str=Form(...)):
-    print(compressed_path)
-    image = Image.open('.'+compressed_path)
-    print(np.array(image).shape)
+async def compress(request:Request, file:UploadFile = File(...)):
 
-    #데이터 전처리
-    image = image.resize((63,63))
+    content = await file.read()
+    with open(f"./static/raw_image/{file.filename}", "wb") as f:
+        f.write(content)
+    file_path = f"./static/raw_image/{file.filename}"
+
+    image = load_img(file_path, color_mode='grayscale')
+    image = img_to_array(image).astype('float32')/255.
+
     image = np.asarray(image)
-    if image.dtype == np.uint8:
-        image = image/255.0
+
+    image = np.expand_dims(image,axis=2)
     image = np.expand_dims(image,axis=0)
-    image = np.asarray(image).astype('float32')
 
     #예측
-    model=keras.models.load_model('./model/Beans.h5')
+    model=keras.models.load_model('./model/denoise_sample.h5')
     prediction = model.predict(image)
+    result = np.squeeze(prediction)
+    result_image = Image.fromarray((result*255).astype('uint8'), 'L')
 
-    label = np.squeeze(prediction)
-    np.set_printoptions(formatter={'float_kind': lambda x: "{0:0.3f}".format(x)})
-    #print(label)
+    save_path = './static/denoised_image'
 
-    return templates.TemplateResponse("index_result.html",{'request':request,'label':label,'compressed_path':compressed_path})
+    isdir = os.path.isdir(save_path)
+
+    if isdir == True:
+        result_image.save(f"{save_path}/{file.filename}")
+    else:
+        os.makedirs(save_path)
+        result_image.save(f"{save_path}/{file.filename}")
+    denoised_path = f"/static/denoised_image/{file.filename}"
+
+    return templates.TemplateResponse("index_result.html",{'request':request,'file_path':file_path,'denoised_path':denoised_path})
 
 
 
