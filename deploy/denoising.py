@@ -1,4 +1,4 @@
-import numpy as numpy
+import numpy as np
 import tensorflow as tf
 import keras 
 from keras import optimizers
@@ -32,9 +32,6 @@ for img in train_cleaned:
 X = np.array(X)
 X_target = np.array(X_target)
 
-plt.imshow(np.squeeze(X[0]),cmap='gray')
-print(np.squeeze(X[0]).shape)
-
 imgdatagen = ImageDataGenerator(
     rotation_range = 20,
     width_shift_range = 0.2,
@@ -45,12 +42,6 @@ imgdatagen = ImageDataGenerator(
 )
 sample_img = np.expand_dims(X[0],axis=0)
 sample_augmen = imgdatagen.flow(sample_img,batch_size=1)
-fig = plt.figure(figsize=(30,30))
-for i in range(10):
-  plt.subplot(2,5,i+1)
-  batch = sample_augmen.next()
-  image = batch[0].astype('float32')
-  plt.imshow(np.squeeze(image), cmap='gray')
 
 test_list = []
 for img in test:
@@ -82,7 +73,7 @@ def build_autoencoder():
   return autoencoder
 
 model = build_autoencoder()
-model.compile(optimizer=optimizers.Adam(), loss='MSE')
+model.compile(optimizer='adam', loss='MSE')
 
 hist = model.fit(X, X_target, epochs=epochs, batch_size=batch_size)
-model.save()
+model.save("../model/denoise_sample.h5")
