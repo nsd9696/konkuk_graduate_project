@@ -72,3 +72,31 @@ def make_loaders(data_path):
     test_loader = DataLoader(test_dataset, batch_size=4, shuffle=False, num_workers=16)
 
     return train_loader, valid_loader, test_loader
+
+def make_model(pretrained_model):
+    
+    if pretrained_model == '' or pretrained_model == None:
+        model = ImageProcessingTransformer(
+            patch_size=4, depth=6, num_heads=4, ffn_ratio=4, qkv_bias=True,drop_rate=0.2, attn_drop_rate=0.2,
+            norm_layer=partial(nn.LayerNorm, eps=1e-6), ).cuda()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.00001) 
+    
+    else:
+        model = ImageProcessingTransformer(
+            patch_size=4, depth=6, num_heads=4, ffn_ratio=4, qkv_bias=True,drop_rate=0.2, attn_drop_rate=0.2,
+            norm_layer=partial(nn.LayerNorm, eps=1e-6), ).cuda()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.00001) 
+
+        checkpoint = torch.load(pretrained_model)
+        model.load_state_dict(checkpoint['model_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+    
+    return model, optimizer
+
+train_loader, valid_loader, test_loader = make_loaders(data_path)
+model, optimizer = make_model(pretrained_model)
+
+if pretrained_model == '' or pretrained_model == None:
+    model_name = 'raw_model'
+else:
+    model_name = pretrained_model
