@@ -28,10 +28,17 @@ class ImageProcessDataset(Dataset):
     def __init__(self, data_dir, transform):
 
         train_path = data_dir + '/' + 'hazy'
-        train_list = [data_dir + '/' + 'hazy' + '/' + i for i in train_list]
 
-        self.train_list = train_list
-        self.transform = transform
+        try:
+            train_list = sorted(os.listdir(train_path))
+            
+            train_list = [data_dir + '/' + 'hazy' + '/' + i for i in train_list]
+
+            self.train_list = train_list
+            self.transform = transform
+
+        except:
+            raise ValueError
 
     def __len__(self):
         return len(self.train_list)
