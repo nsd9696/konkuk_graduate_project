@@ -100,3 +100,78 @@ if pretrained_model == '' or pretrained_model == None:
     model_name = 'raw_model'
 else:
     model_name = pretrained_model
+
+def train_main():
+    
+    criterion = nn.MSELoss()  
+
+    model.train()
+    model.set_task(5)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.000001) 
+
+    # nb_epochs = 300
+    for epoch in range(nb_epochs + 1):
+        for batch_idx, samples in enumerate(train_loader):
+
+            x_train, y_train = samples
+            x_train = x_train.cuda()
+            x_train.requires_grad_()
+            y_train = y_train.cuda()
+            # H(x) 계산
+            prediction = model(x_train)
+            cost = criterion(prediction, y_train)
+            # cost로 H(x) 계산
+            optimizer.zero_grad()
+            cost.backward()
+            optimizer.step()
+
+            print('Epoch {:4d}/{} Batch {}/{} Cost: {:.6f}'.format(
+                epoch, nb_epochs, batch_idx+1, len(train_loader),
+                cost.item()
+                ))
+        
+        # validation part
+        for batch_idx, samples in enumerate(valid_loader):
+            with torch.no_grad():
+                model.eval()
+                x_train, y_train = samples
+                x_train = x_train.cuda()
+                y_train = y_train.cuda()
+                prediction = model(x_train)
+                valid_cost = criterion(prediction, y_train)
+                print('Epoch {:4d}/{} Batch {}/{} Cost: {:.6f}'.format(
+                    epoch, nb_epochs, batch_idx+1, len(valid_loader),valid_cost.item()))
+            
+        torch.save({
+                    'epoch': epoch,
+                    'model_state_dict': model.state_dict(),
+                    'optimizer_state_dict': optimizer.state_dict(),
+                    'loss': cost,
+                    'epoch': epoch,
+                    }, model_name)
+
+def test_main():
+    model.set_task(5)
+    criterion = nn.MSELoss()  
+
+    avg_cost = []
+    for batch_idx, samples in enumerate(test_loader):
+        with torch.no_grad():
+            model.eval()
+            x_train, y_train = samples
+            x_train = x_train.cuda()
+            y_train = y_train.cuda()
+            prediction = model(x_train)
+            test_cost = criterion(prediction, y_train)
+            avg_cost.append(float(test_cost.item()))
+            print('Batch {}/{} Cost: {:.6f}'.format(
+                batch_idx+1, len(test_loader),test_cost.item()))
+    return np.mean(avg_cost)
+
+def main():
+    train_main()
+    test_result = test_main()
+    print(test_result)
+    return test_result
+
+main()
