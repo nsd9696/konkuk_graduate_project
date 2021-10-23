@@ -23,58 +23,53 @@ data_path = args.data_path
 pretrained_model = args.pretrained_model
 inf_dir = args.inf_dir
 
-
 class ImageProcessDataset(Dataset):
-    def __init__(self, data_dir, transform):
+  def __init__(self, data_dir, transform):
 
-        train_path = data_dir + '/' + 'hazy'
+    train_path = data_dir + '/' + 'hazy'
 
-        try:
-            train_list = sorted(os.listdir(train_path))
-            
-            train_list = [data_dir + '/' + 'hazy' + '/' + i for i in train_list]
+    try:
+      train_list = sorted(os.listdir(train_path))
+    except:
+      raise ValueError
+    
+    train_list = [data_dir + '/' + 'hazy' + '/' + i for i in train_list]
 
-            self.train_list = train_list
-            self.transform = transform
+    self.train_list = train_list
+    self.transform = transform
 
-        except:
-            raise ValueError
+  def __len__(self):
+    return len(self.train_list)
+  
+  def __getitem__(self, idx):
+    train_image = Image.open(self.train_list[idx])
+    train_image = self.transform(train_image)
 
-    def __len__(self):
-        return len(self.train_list)
+    return train_image, self.train_list[idx]
 
-    def __getitem__(self, idx):
-        train_image = Image.open(self.train_list[idx])
-        train_image = self.transform(train_image)
-
-        return train_image, self.train_list[idx]
-
-
-def make_loaders(data_path, inf_dir):
+def make_loaders(data_path,inf_dir):
     trans = transforms.Compose([transforms.ToTensor(),
-                                transforms.Resize((128, 128)),
-                                transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
-                                ])
-
+                                    transforms.Resize((128,128)),
+                                    transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+                                    ])
+    
     test_path = os.path.join(data_path, inf_dir)
     test_dataset = ImageProcessDataset(test_path, transform=trans)
     test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=16)
 
     return test_loader
 
-
-inf_loader = make_loaders(data_path, inf_dir)  # no target data
-
+inf_loader = make_loaders(data_path, inf_dir) # no target data
 
 def main():
     model.set_task(5)
-    criterion = nn.MSELoss()
+    criterion = nn.MSELoss()  
     for batch_idx, samples in enumerate(inf_loader):
         with torch.no_grad():
             model.eval()
             x_train, img_path = samples
             x_train = x_train.cuda()
             prediction = model(x_train)
-            im = Image.fromarray(np.transpose(prediction[0].cpu().detach().numpy() * 0.5 + 0.5, (1, 2, 0)))
+            im = Image.fromarray(np.transpose(prediction[0].cpu().detach().numpy() * 0.5 + 0.5, (1,2,0)))
             im_name = str(img_path[0]).split('.')[0]
             im.save(im_name + '_dehazed' + '.' + 'jpg')
