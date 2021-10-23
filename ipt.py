@@ -79,3 +79,189 @@ class Attention(nn.Module):
         x = self.proj_drop(x)
         return x
 
+class EncoderLayer(nn.Module):
+
+    def __init__(self, dim, num_heads, ffn_ratio=4., qkv_bias=False, qk_scale=None, drop=0., attn_drop=0.,
+                 act_layer=nn.ReLU, norm_layer=nn.LayerNorm):
+        super().__init__()
+        self.norm1 = norm_layer(dim)
+        self.attn = Attention(
+            dim, num_heads=num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop)
+        # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
+        # self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity()
+        self.norm2 = norm_layer(dim)
+        ffn_hidden_dim = int(dim * ffn_ratio)
+        self.ffn = Ffn(in_features=dim, hidden_features=ffn_hidden_dim, act_layer=act_layer, drop=drop)
+
+    def forward(self, x, pos):
+        x = self.norm1(x)
+        q, k, v = x + pos, x + pos, x
+        x = x + self.attn(q, k, v)
+        x = x + self.ffn(self.norm2(x))
+        return x
+
+class DecoderLayer(nn.Module):
+    
+    def __init__(self, dim, num_heads, ffn_ratio=4., qkv_bias=False, qk_scale=None, drop=0., attn_drop=0.,
+                 act_layer=nn.ReLU, norm_layer=nn.LayerNorm):
+        super().__init__()
+        self.norm1 = norm_layer(dim)
+        self.attn1 = Attention(
+            dim, num_heads=num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop)
+        # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
+        # self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity()
+        self.norm2 = norm_layer(dim)
+        self.attn2 = Attention(
+            dim, num_heads=num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop)
+        self.norm3 = norm_layer(dim)
+        ffn_hidden_dim = int(dim * ffn_ratio)
+        self.ffn = Ffn(in_features=dim, hidden_features=ffn_hidden_dim, act_layer=act_layer, drop=drop)
+
+    def forward(self, x, pos, task_embed):
+        memory = x
+        x = self.norm1(x)
+        q, k, v = x + task_embed, x + task_embed, x
+        x = x + self.attn1(q, k, v)
+        x = self.norm2(x)
+        q, k, v = x + task_embed, memory + pos, memory
+        x = x + self.attn2(q, k, v)
+        x = x + self.ffn(self.norm3(x))
+        return x
+
+
+class ResBlock(nn.Module):
+
+    def __init__(self, channels):
+        super(ResBlock, self).__init__()
+        self.conv1 = nn.Conv2d(channels, channels, kernel_size=5, stride=1,
+                     padding=2, bias=False)
+        # self.bn1 = nn.BatchNorm2d(channels)
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = nn.Conv2d(channels, channels, kernel_size=5, stride=1,
+                     padding=2, bias=False)
+        # self.bn2 = nn.BatchNorm2d(channels)
+
+    def forward(self, x):
+        residual = x
+
+        out = self.conv1(x)
+        # out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        # out = self.bn2(out)
+
+        out += residual
+        # out = self.relu(out)
+
+        return out
+
+class Head(nn.Module):
+    """ Head consisting of convolution layers
+    Extract features from corrupted images, mapping N3HW images into NCHW feature map.
+    """
+    def __init__(self, in_channels, out_channels):
+        super(Head, self).__init__()
+        self.conv1= nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=1,
+                     padding=1, bias=False)
+        # self.bn1 = nn.BatchNorm2d(out_channels) if task_id in [0, 1, 5] else nn.Identity()
+        # self.relu = nn.ReLU(inplace=True)
+        self.resblock1 = ResBlock(out_channels)
+        self.resblock2 = ResBlock(out_channels)
+
+    def forward(self, x):
+        out = self.conv1(x)
+        # out = self.bn1(out)
+        # out = self.relu(out)
+
+        out = self.resblock1(out)
+        out = self.resblock2(out)
+
+        return out
+
+class PatchEmbed(nn.Module):
+    """ Feature to Patch Embedding
+    input : N C H W
+    output: N num_patch P^2*C
+    """
+    def __init__(self, patch_size=1, in_channels=64):
+        super().__init__()
+        self.patch_size = patch_size
+        self.dim = self.patch_size ** 2 * in_channels
+
+    def forward(self, x):
+        N, C, H, W = ori_shape = x.shape
+        
+        p = self.patch_size
+        num_patches = (H // p) * (W // p)
+        out = torch.zeros((N, num_patches, self.dim)).to(x.device)
+        #print(f"feature map size: {ori_shape}, embedding size: {out.shape}")
+        i, j = 0, 0
+        for k in range(num_patches):
+            if i + p > W:
+                i = 0
+                j += p
+            out[:, k, :] = x[:, :, i:i+p, j:j+p].flatten(1)
+            i += p
+        return out, ori_shape
+
+class DePatchEmbed(nn.Module):
+    """ Patch Embedding to Feature
+    input : N num_patch P^2*C
+    output: N C H W
+    """
+    def __init__(self, patch_size=1, in_channels=64):
+        super().__init__()
+        self.patch_size = patch_size
+        self.num_patches = None
+        self.dim = self.patch_size ** 2 * in_channels
+
+    def forward(self, x, ori_shape):
+        N, num_patches, dim = x.shape
+        _, C, H, W = ori_shape
+        p = self.patch_size
+        out = torch.zeros(ori_shape).to(x.device)
+        i, j = 0, 0
+        for k in range(num_patches):
+            if i + p > W:
+                i = 0
+                j += p
+            out[:, :, i:i+p, j:j+p] = x[:, k, :].reshape(N, C, p, p)
+            #out[:, k, :] = x[:, :, i:i+p, j:j+p].flatten(1)
+            i += p
+        return out
+
+
+class Tail(nn.Module):
+    """ Tail consisting of convolution layers and pixel shuffle layers
+    NCHW -> N3HW.
+    """
+    def __init__(self, task_id, in_channels, out_channels):
+        super(Tail, self).__init__()
+        assert 0 <= task_id <= 5
+        # 0, 1 for noise 30, 50; 2, 3, 4 for sr x2, x3, x4, 5 for defog
+        upscale_map = [1, 1, 2, 3, 4, 1]
+        scale = upscale_map[task_id]
+        m = []
+        # for SR task
+        if scale > 1:
+            m.append(nn.Conv2d(in_channels, in_channels * scale * scale, kernel_size=3, stride=1,
+                     padding=1, bias=False))
+            if (scale & (scale - 1)) == 0:
+                for _ in range(int(math.log(scale, 2))):
+                    m.append(nn.PixelShuffle(2))
+            elif scale == 3:
+                m.append(nn.PixelShuffle(3))
+            else:
+                raise NameError("Only support x3 and x2^n SR")
+
+        m.append(nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=1,
+                     padding=1, bias=False))
+        self.m = nn.Sequential(*m)
+        
+    def forward(self, x):
+        out = self.m(x)
+        #print("task_id:", self.task_id)
+        #print("shape of tail's output:", x.shape)
+        # out = self.bn1(out)
+        return out
