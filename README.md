@@ -27,5 +27,3 @@
 - CI/CD: Travis
 - Model and Data are stored in Google Drive
 -  
-
- 
