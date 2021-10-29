@@ -16,7 +16,7 @@ import streamlit as st
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/drive']
 
-@st.cache
+@st.cache(persist=True)
 def load_cpu_model():
     """Shows basic usage of the Drive v3 API.
     Prints the names and ids of the first 10 files the user has access to.

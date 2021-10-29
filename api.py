@@ -6,7 +6,7 @@ import streamlit as st
 import torch
 from PIL import Image
 
-@st.cache
+# @st.cache()
 def img_transform(image):
     
     trans = transforms.Compose([transforms.ToTensor(),
@@ -15,7 +15,7 @@ def img_transform(image):
                                 ])
     return trans(image).unsqueeze(0)
 
-@st.cache
+@st.cache(max_entries=10, ttl=3600)
 def inference(model,image):
     model.set_task(5)
     pred_result = torch.squeeze(model(image))

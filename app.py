@@ -31,14 +31,14 @@ if inference_run:
         st.image(output_img)
 
 
-with st.expander("Sample Result"):
-    col1, col2 = st.columns(2)
+# with st.expander("Sample Result"):
+#     col1, col2 = st.columns(2)
 
-    with col1:
-        st.header("Hazy Image")
-        st.image("hazy.jpg")
+#     with col1:
+#         st.header("Hazy Image")
+#         st.image("hazy.jpg")
 
-    with col2:
-        st.header("Clean Image")
-        st.image("target.jpg")
+#     with col2:
+#         st.header("Clean Image")
+#         st.image("target.jpg")
     
