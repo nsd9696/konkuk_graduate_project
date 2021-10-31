@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: imgDenoise
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: imageDenoise
+  template:
+    metadata:
+      labels:
+        app: imageDenoising
+    spec:
+      containers:
+      - name: cv-app
+        image: gcr.io/image-denoise-330704/myapp:v1
+        ports:
+        - containerPort: 8501

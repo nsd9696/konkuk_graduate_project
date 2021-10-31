@@ -1,0 +1,20 @@
+steps:
+- name: 'gcr.io/image-denoise/docker'
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/myapp:v1', '.']
+  timeout: 180s
+- name: 'gcr.io/image-denoise/docker'
+  args: ['push', 'gcr.io/$PROJECT_ID/myapp:v1']
+- name: 'gcr.io/image-denoise/gcloud'
+  entrypoint: "bash"
+  args:
+  - "-c"
+  - |
+    echo "Docker Container Built"
+    ls -la
+    ls -al models/
+- name: "gcr.io/image-denoise/gke-deploy"
+  args:
+  - run
+  - --filename=K8s/
+  - --location=us-west1-b
+  - --cluster=mykube
