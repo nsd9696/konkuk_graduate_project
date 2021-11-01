@@ -39,4 +39,4 @@ steps:
 # images: [
 #    'gcr.io/$PROJECT_ID/<app-name>:$TAG_NAME',
 #    'gcr.io/$PROJECT_ID/<app-name>:latest'
-  ]
+#  ]
