@@ -1,7 +1,7 @@
 # lightweight python
-FROM python:3.7-slim
+FROM ubuntu:20.04
 
-RUN apt-get update
+RUN apt-get update && apt-get install python3 python3-pip -y
 
 # Copy local code to the container image.
 ENV APP_HOME /app
