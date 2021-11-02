@@ -14,7 +14,7 @@ steps:
 - name: "gcr.io/cloud-builders/gke-deploy"
   args:
   - run
-  - --filename=deployment.apps/
+  - --filename=img-denoise/
   - --location=us-central1-c
   - --cluster=cluster-1
 # #step 3
