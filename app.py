@@ -16,7 +16,7 @@ if raw_img:
     image = Image.open(raw_img).convert("RGB")
     inference_img = img_transform(image)
 
-inference_run = st.button('Dehaze!')
+inference_run = st.button('Dehaze')
 
 if inference_run:
     output_img = inference(model, inference_img)
