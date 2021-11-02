@@ -29,6 +29,7 @@ if inference_run:
     with col2:
         st.header("Clean Image")
         st.image(output_img)
+        st.markdown(get_image_download_link(output_img,raw_img.name,'Download '+raw_img.name), unsafe_allow_html=True)
 
 
 with st.expander("Sample Result"):
