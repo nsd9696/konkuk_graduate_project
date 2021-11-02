@@ -17,6 +17,7 @@ steps:
   - --filename=kubernetes/
   - --location=us-central1-c
   - --cluster=cluster-1
+  
 # #step 3
 # - name: 'gcr.io/cloud-builders/kubectl'
 #   args: ['apply', '-f', 'k8s/']
