@@ -30,4 +30,15 @@ if inference_run:
         st.header("Clean Image")
         st.image(output_img)
 
+
+with st.expander("Sample Result"):
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.header("Hazy Image")
+        st.image("hazy.jpg")
+
+    with col2:
+        st.header("Clean Image")
+        st.image("target.jpg")
     
