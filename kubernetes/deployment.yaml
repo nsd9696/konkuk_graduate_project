@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: cv-app
-        image: gcr.io/image-denoise-330704/myapp:v1
+        image: gcr.io/image-denoise-330704/github.com/nsd9696/konkuk_graduate_project:latest
         ports:
         - containerPort: 8501
