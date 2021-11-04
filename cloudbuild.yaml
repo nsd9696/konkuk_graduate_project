@@ -18,7 +18,7 @@ steps:
   - --image=gcr.io/image-denoise-330704/github.com/nsd9696/konkuk_graduate_project:latest
   - --location=us-central1-c
   - --cluster=cluster-2
-  timeout: 1200s
+timeout: 2000s
 
 # #step 3
 # - name: 'gcr.io/cloud-builders/kubectl'
