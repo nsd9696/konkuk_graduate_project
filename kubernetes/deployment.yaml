@@ -18,3 +18,4 @@ spec:
         ports:
         - containerPort: 8501
   minReadySeconds: 1200
+  progressDeadlineSeconds: 1200
