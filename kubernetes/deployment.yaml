@@ -16,7 +16,7 @@ spec:
       - name: cv-app
         image: gcr.io/image-denoise-330704/github.com/nsd9696/konkuk_graduate_project:latest
         imagePullPolicy: Always
-        # command: ['sh', '-c', 'echo 'xxx && sleep 180']
+        command: ["/bin/sh", "-ec", "while :; do echo '.'; sleep 5 ; done"]
         ports:
         - containerPort: 8501
   minReadySeconds: 1200
