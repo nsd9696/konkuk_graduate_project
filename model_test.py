@@ -1,24 +1,27 @@
-import os
-import sys
-import io
-import base64
-import torchvision.transforms as transforms
-import numpy as np
-import streamlit as st
-import torch
 from PIL import Image
+import numpy as np
+from ipt import ImageProcessingTransformer
+from functools import partial
+import torch
+import torch.nn as nn
+import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
 
-@st.cache()
+img = Image.open('hazy.jpg')
+model = ImageProcessingTransformer(
+    patch_size=4, depth=6, num_heads=4, ffn_ratio=4, qkv_bias=True,drop_rate=0.2, attn_drop_rate=0.2,
+    norm_layer=partial(nn.LayerNorm, eps=1e-6), )
+checkpoint_cpu = torch.load('model_1016_0.2_cpu')
+model.load_state_dict(checkpoint_cpu['model_state_dict'])
+
 def img_transform(image):
     
     trans = transforms.Compose([transforms.ToTensor(),
                                 transforms.Resize((128,128)),
                                 transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
                                 ])
-    return trans(image).unsqueeze(0)
+    return torch.unsqueeze(trans(image),0)
 
-@st.cache()
 def inference(model,image):
     model.set_task(5)
     with torch.no_grad():
@@ -30,12 +33,6 @@ def inference(model,image):
     pil_img = clip_img.astype('uint8')
     return Image.fromarray(pil_img)
 
-@st.cache()
-def get_image_download_link(img,filename,text):
-    buffered = io.BytesIO()
-    img.save(buffered, format="JPEG")
-    img_str = base64.b64encode(buffered.getvalue()).decode()
-    href =  f'<a href="data:file/txt;base64,{img_str}" download="{filename}">{text}</a>'
-    return href
+img_ = img_transform(img)
+result = inference(model,img_)
 
-    
