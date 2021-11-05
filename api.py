@@ -24,8 +24,6 @@ def inference(model,image):
     with torch.no_grad():
         model.eval()
         pred_result = torch.squeeze(model(image))
-    plt.imshow(np.transpose(pred_result.detach().numpy() * 0.5 + 0.5, (1,2,0)))
-    plt.show()
     clip_img = np.clip(np.transpose(pred_result.detach().numpy().astype(float) * 0.5 + 0.5, (1,2,0)),0,1) * 255
     pil_img = clip_img.astype('uint8')
     return Image.fromarray(pil_img)
