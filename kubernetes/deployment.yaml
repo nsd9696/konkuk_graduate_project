@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: img-denoise
+  name: img-denoise-temp
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: image-denoise
+      app: image-denoise-temp
   template:
     metadata:
       labels:
-        app: image-denoise
+        app: image-denoise-temp
     spec:
       containers:
       - name: cv-app-temp
@@ -19,5 +19,3 @@ spec:
         command: ["/bin/sh", "-ec", "while :; do echo '.'; sleep 5 ; done"]
         ports:
         - containerPort: 8501
-  minReadySeconds: 1200
-  progressDeadlineSeconds: 2000
