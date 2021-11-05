@@ -1,7 +1,7 @@
 steps:
 - name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: 'bash'
-  args: ['-c', 'gcloud config set app/cloud_build_timeout 2000 && gcloud app deploy']
+  args: ['-c', 'gcloud config set app/cloud_build_timeout 2000']
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '-t', 'gcr.io/$PROJECT_ID/github.com/nsd9696/konkuk_graduate_project:latest', '.']
   timeout: 1200s
