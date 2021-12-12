@@ -41,7 +41,7 @@ def load_cpu_model():
 
     service = build('drive', 'v3', credentials=creds)
 
-    model_response = service.files().list(q="name = 'model_1016_0.2_cpu'", fields="nextPageToken, files(id, name)").execute()
+    model_response = service.files().list(q="name = 'model_1016_0.2_new_cpu'", fields="nextPageToken, files(id, name)").execute()
     model_items = model_response.get('files' , [])
     model_id = model_items[0].get('id')
     request = service.files().get_media(fileId=model_id)
