@@ -25,26 +25,4 @@ steps:
   timeout: 1200s
 timeout: 2000s
 
-# #step 3
-# - name: 'gcr.io/cloud-builders/kubectl'
-#   args: ['apply', '-f', 'k8s/']
-#   env:
-#   - 'CLOUDSDK_COMPUTE_ZONE=asia-northeast2-b'
-#   - 'CLOUDSDK_CONTAINER_CLUSTER=cluster-1'
-# #step 4
-# - name: 'gcr.io/cloud-builders/kubectl'
-#   args: [
-#    'set', 
-#    'image', 
-#    'deployment', 
-#    'myapp', 
-#    'myapp=gcr.io/$PROJECT_ID/myapp:$TAG_NAME'
-#   ]
-#   env:
-#   - 'CLOUDSDK_COMPUTE_ZONE=asia-northeast2-b'
-#   - 'CLOUDSDK_CONTAINER_CLUSTER=cluster-1'
-# # push images to Google Container Registry with tags
-# images: [
-#    'gcr.io/$PROJECT_ID/<app-name>:$TAG_NAME',
-#    'gcr.io/$PROJECT_ID/<app-name>:latest'
-#  ]
+# 
