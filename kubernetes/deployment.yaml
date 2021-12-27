@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: img-denoise-temp
+  name: terraform-gcp-test
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: image-denoise-temp
+      app: terraform-gcp-test
   template:
     metadata:
       labels:
-        app: image-denoise-temp
+        app: terraform-gcp-test
     spec:
       containers:
-      - name: cv-app-temp
-        image: gcr.io/image-denoise-330704/github.com/nsd9696/konkuk_graduate_project:latest
+      - name: terraform-app
+        image: gcr.io/terraform-test-336308/github.com/nsd9696/terraform-gcp-test:latest
         ports:
         - containerPort: 8501

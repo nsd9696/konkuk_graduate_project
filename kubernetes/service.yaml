@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: img-denoise-temp
+  name: terraform-gcp-test
 spec:
   type: LoadBalancer
   selector:
-    app: image-denoise-temp
+    app: terraform-gcp-test
   ports:
   - port: 80
     targetPort: 8501
